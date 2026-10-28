@@ -39,26 +39,3 @@
 * **NFR-03 (Scalability):** The system shall process volumetric matrices up to $1024 \times 1024 \times 1024$ without memory overflow or crashes.
 * **NFR-04 (Stability):** Invalid coordinates or out-of-bounds slices shall be handled gracefully without terminating execution.
 
-
-......
-## 4. Appendices
-
-### 4.1 Use Case: UC-01 Generate Projection Video
-* **Actor:** User / Automated Grading Script.
-* **Preconditions:** Valid `.nrrd` and `.csv` files are accessible on disk.
-* **Main Flow:**
-  1. Actor invokes `python Ex0.py file.nrrd file.csv file.mp4`.
-  2. System loads `.nrrd` data into 3D matrix $M$.
-  3. System reads plane coordinate rows from `file.csv`.
-  4. System projects each plane onto a 2D frame $E$ and appends it to the video stream.
-  5. System finalizes and saves `file.mp4`.
-* **Alternative Flow (3a - Invalid Plane Geometry):** System logs a warning and skips the malformed frame or raises a descriptive validation error.
-* **Postconditions:** `file.mp4` is saved on disk containing one frame per valid CSV row.
-
-### 4.2 Traceability Matrix
-| Requirement ID | Use Case | Deliverable / Component | Verification Method |
-| :--- | :--- | :--- | :--- |
-| **REQ-01, REQ-02** | UC-01 | I/O Parser Module | Unit Test (File Loading) |
-| **REQ-03, REQ-04, REQ-05** | UC-01 | Projection Math Engine | Unit & Geometric Accuracy Test |
-| **REQ-06** | UC-01 | Video Encoder Module | System Demo Test (`Ex0.py`) |
-| **NFR-01, NFR-02, NFR-03** | UC-01 | Core Engine | Benchmark Profiler ($\text{FPS} \ge 60$) |
