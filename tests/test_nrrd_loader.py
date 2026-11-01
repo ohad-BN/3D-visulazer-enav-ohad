@@ -24,8 +24,11 @@ from nrrd_loader import (
 
 
 def get_mrhead_path() -> str:
-    """Return path to MRHead_1.nrrd in repository root."""
+    """Return path to MRHead_1.nrrd, checking NRRD/ folder first, then repository root."""
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    nrrd_in_folder = os.path.join(repo_root, "NRRD", "MRHead_1.nrrd")
+    if os.path.isfile(nrrd_in_folder):
+        return nrrd_in_folder
     return os.path.join(repo_root, "MRHead_1.nrrd")
 
 

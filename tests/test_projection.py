@@ -177,7 +177,8 @@ def test_high_fps_throughput_benchmark():
     """
     import os
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    nrrd_path = os.path.join(repo_root, "MRHead_1.nrrd")
+    nrrd_in_folder = os.path.join(repo_root, "NRRD", "MRHead_1.nrrd")
+    nrrd_path = nrrd_in_folder if os.path.isfile(nrrd_in_folder) else os.path.join(repo_root, "MRHead_1.nrrd")
     vol = load_nrrd(nrrd_path)
 
     # Define a representative diagonal slicing plane (~150x150 pixels)

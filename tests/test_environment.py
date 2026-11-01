@@ -52,10 +52,12 @@ def test_internal_module_imports():
 
 
 def test_mrhead_dataset_present():
-    """Verify that sample MRHead_1.nrrd dataset is present in workspace root."""
+    """Verify that sample MRHead_1.nrrd dataset is present in NRRD folder or workspace root."""
     workspace_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    nrrd_path = os.path.join(workspace_root, "MRHead_1.nrrd")
-    assert os.path.exists(nrrd_path), f"Expected MRHead_1.nrrd at {nrrd_path}"
+    nrrd_in_folder = os.path.join(workspace_root, "NRRD", "MRHead_1.nrrd")
+    nrrd_root = os.path.join(workspace_root, "MRHead_1.nrrd")
+    nrrd_path = nrrd_in_folder if os.path.isfile(nrrd_in_folder) else nrrd_root
+    assert os.path.exists(nrrd_path), f"Expected MRHead_1.nrrd at {nrrd_in_folder} or {nrrd_root}"
     assert os.path.getsize(nrrd_path) > 1000, "MRHead_1.nrrd file appears empty or truncated"
 
 

@@ -40,6 +40,12 @@ Execute a full end-to-end projection on the bundled MRI head scan:
 python Ex0.py MRHead_1.nrrd CSV/head.csv output.mp4
 ```
 
+Alternatively, run the automated one-click Windows demonstration batch script:
+```cmd
+demo.bat
+```
+*(Generates `demo.mp4`, executes all 9 test suites, and displays continuous performance history)*.
+
 ---
 
 ## 2. Usage Examples
@@ -174,6 +180,7 @@ pytest tests/test_video_writer.py -v
 ```text
 Ex0/
 ├── README.md                   # Repository entry point and user documentation
+├── demo.bat                    # Automated one-click demo script (Render + Tests + History)
 ├── Ex0.py                      # Main CLI entry point and pipeline orchestrator
 ├── geometry.py                 # Geometric models, vector math, CSV parser, continuity check
 ├── nrrd_loader.py              # NRRD volume ingestion, bounds validation, C-contiguous layout
