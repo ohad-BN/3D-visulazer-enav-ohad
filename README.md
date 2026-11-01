@@ -40,13 +40,6 @@ Execute a full end-to-end projection on the bundled MRI head scan:
 python Ex0.py MRHead_1.nrrd CSV/head.csv output.mp4
 ```
 
-Alternatively, run the automated one-click Windows demonstration batch script:
-```cmd
-demo.bat
-```
-*(Generates `demo.mp4`, executes all 9 test suites, and displays continuous performance history)*.
-
----
 
 ## 2. Usage Examples
 
