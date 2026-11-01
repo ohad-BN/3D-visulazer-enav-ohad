@@ -102,18 +102,54 @@ Each row in the CSV file represents one video frame slice, formatted as floating
 
 ## 4. How to Run the Tests
 
-The test suite validates compliance with the Software Test Plan (STP Suites 1–7):
+The test suite validates compliance with the Software Test Plan across **9 automated suites** (67 tests) and includes advanced diagnostic reporting, performance regression isolation, and continuous benchmarking telemetry.
 
-### 1. Unified STP Test Suite Runner
-To execute all 7 STP test suites and generate an executive summary table:
+### 1. Unified STP Test & Regression Runner
 ```bash
+# Standard run: Executes Suites 1-9, Fault Localization, and Stage Profiling vs Baseline
 python run_all_tests.py
+
+# Record the current commit performance as the new reference baseline (.perf_baseline.json)
+python run_all_tests.py --save-baseline
+
+# View continuous performance telemetry history log table
+python run_all_tests.py --show-history
+
+# Fast functional test run (skips performance profiling)
+python run_all_tests.py --skip-profile
+
+# Run self-test verification ('testing the tester' under simulated bugs and slowdowns)
+python run_all_tests.py --self-test
 ```
 
-### 2. Running Individual Suites with `pytest`
+### 2. Diagnostic & Regression Features
+* **Injected Bug & Fault Localization Engine (`diagnostics.py`):**
+  When a test fails (e.g. an evaluator injects a bug or mutation), the harness inspects the traceback down to the exact project file (`geometry.py`, `projection_engine.py`, etc.), extracts a 5-line source code context pointing to the failing line, classifies the fault (`[MATH_SINGULARITY]`, `[GEOMETRIC_INVARIANT]`, `[BOUNDARY_VIOLATION]`), provides a diagnostic hint, and compiles an executive report in [`reports/fault_localization_report.md`](reports/fault_localization_report.md).
+* **4-Stage Pipeline Profiler (`performance_profiler.py`):**
+  Measures latency (ms/frame) across 4 isolated stages:
+  * **Stage A:** Geometry Validation & Coordinate Math (`geometry.py`)
+  * **Stage B:** 3D Projection Sampling Math (`projection_engine.py`)
+  * **Stage C:** Frame Normalization & Canvas Centering (`video_writer.py`)
+  * **Stage D:** MP4 Video Encoding Container I/O (`cv2.VideoWriter`)
+  If any stage latency surges $> 30\%$ compared to [`.perf_baseline.json`](.perf_baseline.json), the engine flags that stage as the culprit and cross-references recently modified Git files.
+* **Continuous Performance History Log:**
+  Every run automatically appends telemetry to [`reports/performance_history.csv`](reports/performance_history.csv) (ready for Excel/Sheets graphing) and [`reports/performance_history.md`](reports/performance_history.md) (formatted Markdown table).
+* **Self-Verification Mode (`--self-test`):**
+  Performs non-destructive in-memory simulations of injected bugs and artificial latency surges to prove that all diagnostic and regression detectors are fully operational without altering any files on disk.
+
+### 3. Running Individual Suites with `pytest`
 ```bash
-# Run all tests with verbose output
+# Run all 67 automated tests with verbose output
 pytest -v
+
+# Run diagnostic engine tests (Fault localizer & Profiler alerts)
+pytest tests/test_diagnostics.py -v
+
+# Run geometric & sampling edge cases (Suite 8: Apex singularity, boundary skimming, 45° oblique)
+pytest tests/test_geometric_edge_cases.py -v
+
+# Run video quality edge cases (Suite 9: Anti-flicker global max, jitter-free centering, 1-frame MP4)
+pytest tests/test_video_quality_edge_cases.py -v
 
 # Run 500^3 volumetric performance benchmark (STP Suite 4)
 pytest tests/test_benchmark_500.py -s
@@ -143,8 +179,16 @@ Ex0/
 ├── nrrd_loader.py              # NRRD volume ingestion, bounds validation, C-contiguous layout
 ├── projection_engine.py        # Baseline and vectorized 3D-to-2D scanline projection engines
 ├── video_writer.py             # OpenCV MP4 video encoder, normalization, canvas sizing
-├── run_all_tests.py            # Unified runner executing all 7 STP suites
+├── diagnostics.py              # Injected bug & fault localization engine
+├── performance_profiler.py     # 4-stage pipeline profiler, regression pinpointer, history logger
+├── run_all_tests.py            # Unified runner executing all 9 STP suites + profiler
+├── .perf_baseline.json         # Git-tagged reference performance baseline
 ├── requirements.txt            # Python dependencies
+│
+├── reports/                    # Automated Verification & Diagnostic Reports
+│   ├── performance_history.csv # Continuous benchmark telemetry (CSV for Excel/plotting)
+│   ├── performance_history.md  # Continuous benchmark telemetry (Markdown table)
+│   └── fault_localization_report.md  # Generated on test failure with pinpointed source lines
 │
 ├── docs/                       # Software Engineering Document Chain
 │   ├── scope_of_work_sow.md                        # SOW: Objectives, deliverables, scope, milestones
@@ -153,12 +197,15 @@ Ex0/
 │   ├── software_test_plan_stp.md                   # STP: Test strategies, criteria, suites 1-7
 │   └── implementation_plan.md                      # Development checklist and verification tracking
 │
-├── tests/                      # Automated Test Suites (STP Suites 1-7)
+├── tests/                      # Automated Test Suites (STP Suites 1-9)
 │   ├── test_geometry.py        # Suite 1 (Geometry) & Suite 7 (Continuity warnings)
 │   ├── test_projection.py      # Suite 2 (Analytical correctness) & Suite 5 (Boundaries)
 │   ├── test_nrrd_loader.py     # Suite 3 (NRRD bounds, types, corruption safety)
 │   ├── test_benchmark_500.py   # Suite 4 (500^3 high-throughput FPS benchmark)
 │   ├── test_video_writer.py    # Suite 6 (MP4 container integrity and playability)
+│   ├── test_geometric_edge_cases.py     # Suite 8 (Apex singularity, boundary skimming, 45° oblique)
+│   ├── test_video_quality_edge_cases.py # Suite 9 (Anti-flicker global max, jitter-free centering, 1-frame MP4)
+│   ├── test_diagnostics.py     # Diagnostic engine & profiler alert verification
 │   ├── test_cli.py             # End-to-end CLI arguments and exit code tests
 │   └── test_environment.py     # Runtime environment and dependency checks
 │
@@ -211,7 +258,7 @@ This repository follows the formal Software Engineering document chain:
 
 * **Authors:**
   * Ohad Ben Nun
-  * Anav Shlomov
+  * Einav Shlomov
 * **Course:** Introduction to Software Engineering / Object-Oriented Programming, Ariel University
 * **Instructor:** Prof. Boaz Ben-Moshe (`benmo@g.ariel.ac.il`)
 * **License:** Licensed under the [MIT License](LICENSE).
